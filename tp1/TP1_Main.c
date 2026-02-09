@@ -27,42 +27,56 @@ sbit P3_6 = P3^6;
 // MAIN Routine
 //-----------------------------------------------------------------------------
 void main (void) {
-	
-unsigned int	rampe = 0;
-unsigned int  escalier;	
 
-unsigned int xdata tab[16];
-unsigned int cp = 0;	
-unsigned char i;	
-	
-	      Init_Device();
-	      DAC_Init();
-	
-        while(1)
-        {  
-						 P1 |= (1<<6);
-					  
-					   while (rampe < 4096)
-						 { 
-							   send_to_DAC0(rampe);
-							   rampe++;
-							   tempo(10); 
-					   }
-						 
-						 P1 &= ~(1<<6);
-						 while (rampe != 0)
-						 { 
-							   rampe--;
-							   escalier = rampe & 0x0F00;
-							   send_to_DAC0(escalier);
-							   tempo(10); 
-					   }
-						 for(i = 0;i<16;i++)
-						 {  
-                tab[i] = cp;
-                cp++;							 
-						 }  							 
-									
-        }						               	
-			}
-//*****************************************************************************	 
+    unsigned int rampe = 0;
+    unsigned int escalier;
+    unsigned int xdata tab[16];
+    unsigned int cp = 0;
+    unsigned char i;
+
+    Init_Device();
+    DAC_Init();
+
+    while(1)
+    {
+        // --- PHASE 1 : LA RAMPE (Code original) ---
+        P1 |= (1<<6);
+        while (rampe < 4096)
+        {
+            send_to_DAC0(rampe);
+            rampe++;
+            tempo(10);
+        }
+
+        // --- PHASE 2 : L'ESCALIER (Code original) ---
+        P1 &= ~(1<<6);
+        while (rampe != 0)
+        {
+            rampe--;
+            escalier = rampe & 0x0F00;
+            send_to_DAC0(escalier);
+            tempo(10);
+        }
+
+        // --- PHASE 3 : LE TABLEAU (Code original) ---
+        for(i = 0; i < 16; i++)
+        {
+            tab[i] = cp;
+            cp++;
+        }
+
+        // --- PHASE 4 : ACTIVITÉ 4 (Tes nouveaux ajouts) ---
+
+        // Manipulations sur le Port 3 (via sbit)
+        P3_4 = 1;          // Mettre à 1 le bit 4 de P3
+        P3_5 = 0;          // Mettre à 0 le bit 5 de P3
+        P3_6 = !P3_6;      // Complémenter le bit 6 de P3
+
+        // Manipulations sur le Port 5 et 4 (via masquage)
+        P5 |= (1 << 4);    // Mettre à 1 le bit 4 de P5
+        P5 &= ~(1 << 5);   // Mettre à 0 le bit 5 de P5
+        P4 ^= (1 << 6);    // Complémenter le bit 6 de P4
+
+        tempo(100); // Petite pause pour stabiliser l'affichage
+    }
+}
