@@ -13,9 +13,15 @@
 #include <TP1_Lib_C.h>
 #include <TP1_Lib_ASM.h>
 
-// D�clarations Registres et Bits de l'espace SFR
+// D�clarations Registres et Bits de l'espace SFR
 #define LED_ON 1
 #define LED_OFF 0
+
+// Début activité 4
+sbit P3_4 = P3^4;
+sbit P3_5 = P3^5;
+sbit P3_6 = P3^6;
+// Fin activité 4
 
 //-----------------------------------------------------------------------------
 // MAIN Routine
