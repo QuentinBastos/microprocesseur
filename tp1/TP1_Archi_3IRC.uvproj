@@ -427,6 +427,16 @@
                 </File51>
               </FileOption>
             </File>
+            <File>
+              <FileName>TP1_Lib_C.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\TP1_Lib_C.c</FilePath>
+            </File>
+            <File>
+              <FileName>TP1_Lib_ASM.ASM</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\TP1_Lib_ASM.ASM</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
@@ -851,6 +861,16 @@
                   </C51>
                 </File51>
               </FileOption>
+            </File>
+            <File>
+              <FileName>TP1_Lib_C.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\TP1_Lib_C.c</FilePath>
+            </File>
+            <File>
+              <FileName>TP1_Lib_ASM.ASM</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\TP1_Lib_ASM.ASM</FilePath>
             </File>
           </Files>
         </Group>

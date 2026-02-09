@@ -1,4 +1,6 @@
 "STARTUP.obj",
-"TP1_Main.obj" 
+"TP1_Main.obj",
+"TP1_Lib_C.obj",
+"TP1_Lib_ASM.obj" 
 TO "TP1_3IRC_SIM" 
 RAMSIZE(256) 
