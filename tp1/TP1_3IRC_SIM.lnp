@@ -1,0 +1,4 @@
+"STARTUP.obj",
+"TP1_Main.obj" 
+TO "TP1_3IRC_SIM" 
+RAMSIZE(256) 
