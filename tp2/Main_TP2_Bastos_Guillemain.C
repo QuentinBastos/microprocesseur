@@ -24,9 +24,9 @@
 #define LED_Off 0
 
 
-// Eléments présents sur la carte 8051F020
+// Elï¿½ments prï¿½sents sur la carte 8051F020
 sbit  LED = P1^6;         // LED verte: '1' = ON; '0' = OFF
-sbit BP = P3^7;           // Bouton Poussoir '1' relaché, '0' pressé
+sbit BP = P3^7;           // Bouton Poussoir '1' relachï¿½, '0' pressï¿½
 
 // Ports de Test
 sbit Tst_P34 = P3^4;
@@ -40,6 +40,7 @@ sbit Tst_P36 = P3^6;
 void main (void) {
 
 	Init_Device();
+	// APres initialisation rajoutÃ© le code par exempl : XBR2 |= 0x04; en fonction du rÃ©sultat de Keil
 	Tst_P34 = 0;
 	LED = LED_Off;
 	
