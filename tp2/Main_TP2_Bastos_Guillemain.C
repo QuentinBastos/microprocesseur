@@ -40,7 +40,7 @@ sbit Tst_P36 = P3^6;
 void main (void) {
 
 	Init_Device();
-	// APres initialisation rajouté le code par exempl : XBR2 |= 0x04; en fonction du résultat de Keil
+	XBR2 |= 0x04;  // Force le bit 2 (UART1E) à 1 pour activer l'UART1
 	Tst_P34 = 0;
 	LED = LED_Off;
 	
