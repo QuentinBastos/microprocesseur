@@ -24,59 +24,66 @@
 #define LED_Off 0
 
 
-// El�ments pr�sents sur la carte 8051F020
-sbit  LED = P1^6;         // LED verte: '1' = ON; '0' = OFF
-sbit BP = P3^7;           // Bouton Poussoir '1' relach�, '0' press�
-
-// Ports de Test
-sbit Tst_P34 = P3^4;
-sbit Tst_P35 = P3^5;
-sbit Tst_P36 = P3^6;
-
-// Définition de la LED sur P1.6 (selon le schéma de la carte)
-sbit LED_VERTE = P1^6;
+sbit LED_VERTE = P1^6; // LED verte de la carte
+sbit BP = P3^7;        // Bouton Poussoir (1=relâché, 0=pressé)
 
 void main (void) {
 
-	// --- INITIALISATION ---
-	Init_Device(); // Appelle la config de base (UART0, Timers, SYSCLK sur P1.3)
+    // --- INITIALISATION GLOBALE ---
+    Init_Device();
 
-	// --- ACTIVITÉ 1 : Modification Crossbar ---
-	XBR2 |= 0x04;
+    // Problème : L'ajout de l'UART1 décalait SYSCLK de P1.3 vers P1.5.
+    XBR2 |= 0x04; // Activation de l'UART1
 
-	P1MDOUT |= 0x40; // Met le bit 6 de P1MDOUT à 1 pour passer P1.6 en Push-Pull
+    /* ACTIVITE 2 :
+     * On peut observer que la LED ne clignote pas sur la carte en premier temps.
+     * Ceci est du à la faible impudence qui fait que le signal n'est pas assez fort pour allumer la LED (de plus les ports du 8051 sont en open drain de base
+     * dans ce mode, la broche peut imposer un niveau bas donc 0V, elle ne peut pas pousser de courant à haut niveau donc haute impudence)..
+     * Cepandant, nous pouvons observer des signaux periodiques à l'aide de loscilataure, nous remarquons que la fréquence des
+     * signaux n'est pas compatible avec une fréquence observable.
+     * Pour allumer la LED, il faut modifier le mode de la broche en Push-Pull sur P1.6, grace à ca on a une tension sup a 2.2V en ignorant la résistance.
+     */
 
-	// --- ACTIVITÉ 3 : Entrée Numérique (Bouton Poussoir) ---
-	/*
-	   PROBLÈME : Le bouton poussoir est une ENTRÉE. Pour lire une entrée sans
-	   ambiguïté, la broche doit être laissée en Open-Drain (par défaut) et on
-	   doit forcer la valeur à '1' dans le registre de sortie pour "ouvrir"
-	   le circuit de lecture.
-	*/
-	// Si le bouton est sur P3.7 par exemple :
-	P3 |= 0x80; // On écrit 1 sur le bit 7 pour pouvoir lire l'état réel externe
+    P1MDOUT |= 0x40; // P1.6 en Push-Pull
 
-	while (1) {
+    /* Configuration spécifique :
+       P6 : Sorties Push-Pull (pour les LEDs externes)
+       P7 : Entrées (Open-Drain + écriture de '1')
+       P4.7 : Sortie Push-Pull (Témoin d'activité)
+       P4.0 : Entrée (Lecture configuration)
+    */
+    P6MDOUT |= 0xFF;  // Port 6 en Push-Pull
+    P7MDOUT &= ~0xFF; // Port 7 en Open-Drain (Entrée)
+    P7 = 0xFF;        // Ecriture de '1' pour permettre la lecture externe
 
+    P4MDOUT |= 0x80;  // P4.7 en Push-Pull (1000 0000)
+    P4MDOUT &= ~0x01; // P4.0 en Open-Drain (Entrée)
+    P4 |= 0x01;       // Ecriture de '1' sur P4.0 pour lecture
 
-		if (BOUTON == 0) {
-			LED_VERTE = 1;
-		} else {
-			LED_VERTE = 0;
-		}
+    while (1) {
 
-		{
-			unsigned long i;
-			for (i = 0; i < 50000; i++);
-		}
-	}
+        // Si P4.0 est à 1, P6 recopie P7, sinon il recopie l'inverse.
+        if ((P4 & 0x01) == 0x01) {
+            P6 = P7;
+        } else {
+            P6 = ~P7;
+        }
+
+        // Inversion de P4.7 à chaque cycle (Témoin)
+        P4 ^= 0x80;
+
+        // Allume la LED de la carte si on appuie sur le bouton BP (P3.7)
+        // Note : On utilise BP (défini en sbit) car BOUTON n'était pas déclaré
+        if (BP == 0) {
+            LED_VERTE = 1;
+        } else {
+            LED_VERTE = 0;
+        }
+
+        // Temporisation pour éviter un clignotement trop rapide sur P4.7
+        {
+            unsigned long i;
+            for (i = 0; i < 10000; i++);
+        }
+    }
 }
-
-/* ACTIVITE 2 :
- * On peut observer que la LED ne clignote pas sur la carte en premier temps.
- * Ceci est du à la faible impudence qui fait que le signal n'est pas assez fort pour allumer la LED (de plus les ports du 8051 sont en open drain de base
- * dans ce mode, la broche peut imposer un niveau bas donc 0V, elle ne peut pas pousser de courant à haut niveau donc haute impudence)..
- * Cepandant, nous pouvons observer des signaux periodiques à l'aide de loscilataure, nous remarquons que la fréquence des
- * signaux n'est pas compatible avec une fréquence observable.
- * Pour allumer la LED, il faut modifier le mode de la broche en Push-Pull sur P1.6, grace à ca on a une tension sup a 2.2V en ignorant la résistance.
- *
