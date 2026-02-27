@@ -30,10 +30,12 @@
 // Function PROTOTYPES
 //------------------------------------------------------------------------------------
 void Config_INT7(void);
+void Config_INT0(void);
 
 // El�ments pr�sents sur la carte 8051F020
 sbit  LED = P1^6;         // LED verte: '1' = ON; '0' = OFF
 sbit BP = P3^7;           // Bouton Poussoir '1' relach�, '0' press�
+sbit DECL_EXTRN = P1^0;   // Signal externe INT0 sur P1.0
 // Variables globales
 unsigned int Value_tempo = Fast;
 
@@ -48,6 +50,7 @@ void main (void) {
 	
 	Config_Timer3();
 	Config_INT7();
+	Config_INT0();
 	
 	LED = LED_Off;
 		
@@ -55,7 +58,8 @@ void main (void) {
   P3MDOUT &= ~0x80;  
 	
 	
-	P74OUT |= (1<<0);
+	P74OUT |= (1<<0);   // P4.0 en sortie (drapeau ISR_INT7)
+	P74OUT |= (1<<1);   // P4.1 en sortie (drapeau ISR_INT0)
 
 	
 	EA = 1;
@@ -76,6 +80,22 @@ void Config_INT7(void)
 	P3IF &= ~0x80; // Efface le flag d'interruption sur P3.7 (bit du bouton poussoir, remise à 0 avant activation)
 	EIE2 |= 0x20;  // Active l'interruption externe INT7 dans le registre d'activation étendu EIE2 (bit 5 = masque INT7)
 	EIP2 &= ~0x20; // Positionne la priorité de INT7 en basse priorité dans EIP2 (bit 5 à 0 = priorité faible)
+}
+
+void Config_INT0(void)
+{
+	IT0  = 1;      // INT0 déclenchée sur front descendant (mode edge-triggered falling)
+	IE0  = 0;      // Efface le flag d'interruption INT0 avant activation (évite déclenchement parasite)
+	EX0  = 1;      // Active l'interruption externe INT0 (bit EX0 du registre IE)
+	PX0  = 0;      // Priorité basse pour INT0 (même niveau que INT7, PX0=0 dans IP)
+}
+
+void ISR_INT0(void) interrupt 0
+{
+	P4 |= (1<<1);           // Met à '1' le bit 1 du port P4 : drapeau matériel début ISR_INT0
+	if (Value_tempo == Slow) Value_tempo = Fast; // Bascule le mode de clignotement de la LED
+	else Value_tempo = Slow;
+	P4 &= ~(1<<1);          // Remet à '0' le bit 1 du port P4 : drapeau matériel fin ISR_INT0
 }
 
 void ISR_INT7(void) interrupt 19
@@ -117,3 +137,10 @@ void Config_Timer3(void)
 //Les variable P3IF , P3MDOUT et P7OUT sont utilisées pour configurer le bouton poussoir .
 
 //ACTIVITÉ 4 :
+//On ajoute une interruption externe INT0 sur le signal DECL_EXTRN branché sur P1.0.
+//La fonction Config_INT0() configure IT0=1 (front descendant), EX0=1 (activation), PX0=0 (priorité basse).
+//La priorité de INT0 est identique à celle de INT7 : les deux sont en priorité basse.
+//L'ISR ISR_INT0 (vecteur 0) bascule Value_tempo (Slow<->Fast) comme ISR_INT7.
+//Le drapeau matériel est sur P4.1 : mis à '1' en entrée de l'ISR, remis à '0' en sortie.
+//P74OUT |= (1<<1) dans le main configure P4.1 en sortie push-pull.
+//IE0 est remis automatiquement à 0 par le hardware (mode edge), pas besoin de le faire dans l'ISR.
