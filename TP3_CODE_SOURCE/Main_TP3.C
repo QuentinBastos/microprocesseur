@@ -70,30 +70,29 @@ void main (void) {
    }
 }
 
-  //***************************************************************************************
 void Config_INT7(void)
 {
-	P3IF &= ~0x08; 
-	P3IF &= ~0x80; 
-	EIE2 |= 0x20;  
-	EIP2 &= ~0x20; 
+	P3IF &= ~0x08; // Efface le flag d'interruption sur P3.3 (remise à 0 pour éviter un déclenchement parasite au démarrage)
+	P3IF &= ~0x80; // Efface le flag d'interruption sur P3.7 (bit du bouton poussoir, remise à 0 avant activation)
+	EIE2 |= 0x20;  // Active l'interruption externe INT7 dans le registre d'activation étendu EIE2 (bit 5 = masque INT7)
+	EIP2 &= ~0x20; // Positionne la priorité de INT7 en basse priorité dans EIP2 (bit 5 à 0 = priorité faible)
 }
-//***************************************************************************************
+
 void ISR_INT7(void) interrupt 19
 {
-	 P4 |= (1<<0);
-	 P3IF &= ~0x80; 
-	 if (Value_tempo == Slow) Value_tempo = Fast;
-	 else Value_tempo = Slow;
-	  P4 &= ~(1<<0);
+	 P4 |= (1<<0);          // Met à '1' le bit 0 du port P4 (signal de début de traitement, utile pour debug oscilloscope)
+	 P3IF &= ~0x80;         // Efface le flag d'interruption P3.7 pour autoriser la prochaine interruption sur le bouton
+	 if (Value_tempo == Slow) Value_tempo = Fast; // Si la LED clignote lentement, on passe en mode rapide
+	 else Value_tempo = Slow;                     // Sinon (mode rapide), on repasse en mode lent
+	  P4 &= ~(1<<0);        // Remet à '0' le bit 0 du port P4 (signal de fin de traitement ISR)
 }
-//*****************************************************************************
+
 void Config_Timer3(void)
 {
    	TMR3CN    = 0x04;
     TMR3RL   = 0xB800;
 }
-//*****************************************************************************
+
  void ISR_Timer3(void) interrupt 14  
  {
 	 TMR3CN    &= ~(1<<7);
@@ -110,4 +109,11 @@ void Config_Timer3(void)
 //Les lignes permettant de configurer les interruptions externe sont celle de la fonction CONFIG_INIT7
 //EA = 0 coupe les interruptions pour lire les variables , EA = 1 réactive les interruptions apres avoir lu les variables 
 
-//ACTIVITÉ 2 :
+//ACTIVITÉ 3 :
+//La ligne de code qui permet de changer la frequence de clignotement de la LED est :
+//if (Value_tempo == Slow) Value_tempo = Fast; L86
+//else Value_tempo = Slow; L87
+//La fonction ISR_INT7 est la fonction qui permet de lier l'evenement materiel et le changement de vitesse
+//Les variable P3IF , P3MDOUT et P7OUT sont utilisées pour configurer le bouton poussoir .
+
+//ACTIVITÉ 4 :
