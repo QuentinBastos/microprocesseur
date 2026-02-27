@@ -55,7 +55,8 @@ void main (void) {
 	LED = LED_Off;
 		
   BP = 1;
-  P3MDOUT &= ~0x80;  
+  P3MDOUT &= ~0x80;
+  DECL_EXTRN = 1;   // Met le latch P1.0 à '1' pour passer la broche en haute impédance (entrée open-drain)
 	
 	
 	P74OUT |= (1<<0);   // P4.0 en sortie (drapeau ISR_INT7)
@@ -140,7 +141,6 @@ void Config_Timer3(void)
 //On ajoute une interruption externe INT0 sur le signal DECL_EXTRN branché sur P1.0.
 //La fonction Config_INT0() configure IT0=1 (front descendant), EX0=1 (activation), PX0=0 (priorité basse).
 //La priorité de INT0 est identique à celle de INT7 : les deux sont en priorité basse.
-//L'ISR ISR_INT0 (vecteur 0) bascule Value_tempo (Slow<->Fast) comme ISR_INT7.
+//L'ISR ISR_INT0 (vecteur 0) bascule Value_tempo de slow à fast comme ISR_INT7.
 //Le drapeau matériel est sur P4.1 : mis à '1' en entrée de l'ISR, remis à '0' en sortie.
 //P74OUT |= (1<<1) dans le main configure P4.1 en sortie push-pull.
-//IE0 est remis automatiquement à 0 par le hardware (mode edge), pas besoin de le faire dans l'ISR.
