@@ -137,10 +137,4 @@ void Config_Timer3(void)
 //La fonction ISR_INT7 est la fonction qui permet de lier l'evenement materiel et le changement de vitesse
 //Les variable P3IF , P3MDOUT et P7OUT sont utilisées pour configurer le bouton poussoir .
 
-//ACTIVITÉ 4 :
-//On ajoute une interruption externe INT0 sur le signal DECL_EXTRN branché sur P1.0.
-//La fonction Config_INT0() configure IT0=1 (front descendant), EX0=1 (activation), PX0=0 (priorité basse).
-//La priorité de INT0 est identique à celle de INT7 : les deux sont en priorité basse.
-//L'ISR ISR_INT0 (vecteur 0) bascule Value_tempo de slow à fast comme ISR_INT7.
-//Le drapeau matériel est sur P4.1 : mis à '1' en entrée de l'ISR, remis à '0' en sortie.
-//P74OUT |= (1<<1) dans le main configure P4.1 en sortie push-pull.
+
