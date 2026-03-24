@@ -38,8 +38,9 @@ sbit BP = P3^7;           // Bouton Poussoir '1' relache, '0' presse
 void Config_INT7(void);
 void Config_Timer3(void);
 void Config_Timer2(void);
-void Config_UART0_mode1(void);   // AJOUT : prototype de la config UART0
-void UART0_Send_Char(char c);    // AJOUT : prototype de la fonction d'envoi
+void CFG_clock_UART_VerT1(void); // Activite 4 : Timer 1 comme source horloge UART0
+void Config_UART0_mode1(void);
+void UART0_Send_Char(char c);
 
 //------------------------------------------------------------------------------------
 // MAIN Routine
@@ -49,8 +50,9 @@ void main (void) {
     Init_Device();
     Config_Timer3();
     Config_INT7();
-    Config_Timer2();       // Demarrage du generateur de baud rate (115200 Baud)
-    Config_UART0_mode1();  // Configuration de l'UART0 en mode 1
+    // Config_Timer2 // activité 3 : Timer 2 comme generateur de baud rate
+    CFG_clock_UART_VerT1(); // Activite 4 : Timer 1 comme baud rate generator (19200 Baud)
+    Config_UART0_mode1();   // Configuration de l'UART0 en mode 1
 
     LED = LED_Off;  // LED eteinte
 
@@ -206,6 +208,26 @@ void UART0_Send_Char(char c)
     TI0 = 0;
 }
 
+void CFG_clock_UART_VerT1(void)
+{
+    TR1 = 0;   // Stop Timer 1
+
+    // Desactiver Timer 2 comme source horloge UART0
+    RCLK0 = 0;
+    TCLK0 = 0;
+
+    // Timer 1 : mode 2 (8 bits auto-reload)
+    // TMOD : bits 7-4 concernent Timer 1 -> 0010 xxxx = 0x20
+    TMOD = (TMOD & 0x0F) | 0x20;
+
+    TH1 = 0xFA;  // Valeur de reload : 256 - 6 = 250
+    TL1 = 0xFA;  // Precharge
+
+    // Activer Timer 1 comme source horloge UART0
+    // Sur C8051F020, le Timer 1 overflow alimente l'UART0 quand RCLK0=TCLK0=0 (source par defaut)
+    TR1 = 1;   // Demarrage Timer 1
+}
+
 // Activité 2 :
 // La réponse est directement visible sur la page 1 de la datasheet, dans la section Features :
 //  Le STM32L010R8 dispose donc de 2 interfaces série de type UART : USART et LPUART
@@ -218,3 +240,5 @@ void UART0_Send_Char(char c)
 // Information : Sur le PC de la salle, on ne pouvait pas utiliser Putty (port COM non détécté, on a donc fait en mdoe simmulation avec UART #1)
 
 // Activité 4 :
+// On remplace le Timer 2 par le Timer 1 comme source horloge UART0 a 19200 Baud.
+// Timer 1 mode 2 (8 bits auto-reload), cadence SYSCLK/12 : TH1 = 256 - 6 = 0xFA
