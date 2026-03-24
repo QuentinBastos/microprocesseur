@@ -49,7 +49,8 @@ void main (void) {
     Init_Device();
     Config_Timer3();
     Config_INT7();
-    Config_UART0_mode1();  // AJOUT : on configure l'UART0 apres les autres peripheriques
+    Config_Timer2();       // Demarrage du generateur de baud rate (115200 Baud)
+    Config_UART0_mode1();  // Configuration de l'UART0 en mode 1
 
     LED = LED_Off;  // LED eteinte
 
@@ -160,11 +161,8 @@ void Config_Timer2(void)
 //*****************************************************************************
 void Config_UART0_mode1(void)
 {
-    // On appelle Config_Timer2() pour demarrer le generateur de baud rate.
-    // Sans Timer2, l'UART ne connait pas la vitesse d'emission.
-    Config_Timer2();
-
     // Configuration du registre SCON0 (Serial CONtrol register 0)
+    // Le Timer2 doit avoir ete configure avant cet appel (fait dans main)
     //
     //  Bit 7 : SM00 = 0  \
     //                     +--> Mode 1 : UART 8 bits a baud rate variable
@@ -207,3 +205,11 @@ void UART0_Send_Char(char c)
     // un caractere avant que la ligne soit libre.
     TI0 = 0;
 }
+
+// Activité 2 :
+// La réponse est directement visible sur la page 1 de la datasheet, dans la section Features :
+//  Le STM32L010R8 dispose donc de 2 interfaces série de type UART : USART et LPUART
+
+
+// Activité 3 :
+
