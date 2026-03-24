@@ -212,4 +212,9 @@ void UART0_Send_Char(char c)
 
 
 // Activité 3 :
+// On configure le Timer 2 comme generateur de baud rate a 115200 Baud (RCAP2 = 65536 - 6 = 65530).
+// L'UART0 est ensuite configure en mode 1 : 8 bits de donnees, 1 start bit, 1 stop bit (SCON0 = 0x52).
+// Dans la boucle principale, on envoie le caractere 'A' toutes les 10 ms via UART0_Send_Char().
+// Information : Sur le PC de la salle, on ne pouvait pas utiliser Putty (port COM non détécté, on a donc fait en mdoe simmulation avec UART #1)
 
+// Activité 4 :
